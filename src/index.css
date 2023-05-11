@@ -1,48 +1,100 @@
-@import url(https://fonts.googleapis.com/css?family=Open+Sans);
+body {
+  font-family: "Barlow", sans-serif;
+  padding: 0;
+  margin: 0;
+}
+svg {
+  display: block;
+  vertical-align: middle;
+}
+#page-container {
+  position: relative;
+  min-height: 100vh;
+}
 
-body{
-  background: #f2f2f2;
-  font-family: 'Open Sans', sans-serif;
+#content-wrap {
+  padding-bottom: 156px; /* Footer height */
+  min-height: calc(100vh - 156px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 48px;
+}
+#content-wrap .heading {
+  text-align: center;
+}
+h1 {
+  font-size: 36px;
+  margin: 0 0 16px 0;
+  font-weight: 500;
+  color: #333;
+}
+p {
+  max-width: 768px;
+  margin-inline: auto;
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.5;
+  color: #333;
+}
+#search_section {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 156px; /* Footer height */
+  background: linear-gradient(180deg, #f8f8f8 0%, rgba(243, 243, 243, 0) 100%);
+  border-top: 1px solid #e7e7e7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .search {
   width: 100%;
-  position: relative;
   display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 768px;
+  margin-inline: auto;
+  position: relative;
 }
-
-.searchTerm {
+.search input {
+  height: 56px;
+  background: #ffffff;
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+  max-width: 768px;
   width: 100%;
-  border: 3px solid #00B4CC;
-  border-right: none;
-  padding: 5px;
-  height: 20px;
-  border-radius: 5px 0 0 5px;
-  outline: none;
-  color: #9DBFAF;
+  margin-inline: auto;
+  padding: 0 84px 0 24px;
+  border: none;
+  font-size: 16px;
+  color: #333;
 }
-
-.searchTerm:focus{
-  color: #00B4CC;
+.search input:hover {
+  outline: 0;
+  box-shadow: 0 0 1px 1px rgba(13, 110, 253);
 }
-
-.searchButton {
-  width: 40px;
-  height: 36px;
-  border: 1px solid #00B4CC;
-  background: #00B4CC;
-  text-align: center;
-  color: #fff;
-  border-radius: 0 5px 5px 0;
-  cursor: pointer;
-  font-size: 20px;
+.search input:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
-
-/*Resize the wrap to see the search bar change!*/
-.wrap{
-  width: 30%;
+.search button {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  background-color: transparent;
+  border: none;
+  outline: none;
+  height: 56px;
+  width: 56px;
+  top: 0;
+  right: 0;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+.search button:hover {
+  background-color: #fbfbfb;
+}
+.search button svg {
+  margin: 0 auto;
 }
