@@ -91,8 +91,7 @@ const setData = (results) =>{
         <div className="heading">
           <h1>{searchTitle}</h1>
           {searchResults.statsData && <p>{searchResults.statsData}</p>}
-          {searchResults.chartData.labels.length &&
-          <Bar
+          {!!searchResults.chartData.labels.length && <Bar
             data={searchResults.chartData}
           />}
           <p>
