@@ -5,7 +5,7 @@ let prompt =
 const express = require("express");
 const axios = require("axios");
 const { normalizeESData } = require("./helper");
-const re = new RegExp(`\{[^}]*\}*`)
+const re = new RegExp(`\{.*}`)
 const router = express.Router();
 
 //Post Method
@@ -48,7 +48,7 @@ router.post("/query", async (req, res) => {
             const response = await DslESAPI(JSON.parse(matchedString[0]));
             const normalizeResp = {};
             if (response.data.hits) {
-              normalizeResp["statsDate"] = response.data.hits;
+              normalizeResp["statsData"] = response.data.hits;
             }
             if (response.data.aggregations) {
               const aggr = response.data.aggregations;
