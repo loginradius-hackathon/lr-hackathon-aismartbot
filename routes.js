@@ -5,7 +5,7 @@ let prompt =
 const express = require("express");
 const axios = require("axios");
 const { normalizeESData } = require("./helper");
-const re = new RegExp(`\{[^}]*\}*`)
+const re = new RegExp(`\{.*}`)
 const router = express.Router();
 
 //Post Method
