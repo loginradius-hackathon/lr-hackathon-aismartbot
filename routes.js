@@ -10,6 +10,7 @@ const router = express.Router();
 
 //Post Method
 router.post("/query", async (req, res) => {
+  console.log("Query-->>",req.body.message)
   try {
     let message = `Give ES Query for : ${req.body.message}`;
     const payload = {
@@ -60,6 +61,7 @@ router.post("/query", async (req, res) => {
               }
               normalizeResp["chartData"] = charts;
             }
+            console.log("Response===>>",normalizeResp)
             res.json(normalizeResp);
           } else {
             res.json(ParsedResponse);
