@@ -77,8 +77,23 @@ router.post("/query", async (req, res) => {
   }
 });
 
-router.post("/esrecords", (req, res) => {
-  DslESAPI(req.body);
+router.post("/esrecords", async (req, res) => {
+  const response = await DslESAPI(req.body.esquery);
+  const normalizeResp = {};
+  if (response.data.hits) {
+    normalizeResp["statsDate"] = response.data.hits;
+  }
+  if (response.data.aggregations) {
+    const aggr = response.data.aggregations;
+    const charts = {};
+    for (const key in aggr) {
+      if (aggr[key].buckets) {
+        charts[key] = normalizeESData(aggr[key].buckets);
+      }
+    }
+    normalizeResp["chartData"] = charts;
+  }
+  res.json(normalizeResp);
 });
 
 async function DslESAPI(esquery, res) {
