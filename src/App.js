@@ -39,7 +39,7 @@ function App() {
 
 const setData = (results) =>{
   let datasetsData = []
-      if (results.chartData) {
+      if (results.chartData && Object.keys(results.chartData).length) {
         let tempChartData = searchResults.chartData;
         Object.values(results.chartData)[0].forEach(e => {
           tempChartData.labels.push(e.key);
@@ -91,9 +91,10 @@ const setData = (results) =>{
         <div className="heading">
           <h1>{searchTitle}</h1>
           {searchResults.statsData && <p>{searchResults.statsData}</p>}
+          {searchResults.chartData.labels.length &&
           <Bar
             data={searchResults.chartData}
-          />
+          />}
           <p>
           </p>
         </div>
