@@ -5,7 +5,7 @@ let prompt =
 const express = require("express");
 const axios = require("axios");
 const { normalizeESData } = require("./helper");
-
+const re = new RegExp(`\{[^}]*\}*`)
 const router = express.Router();
 
 //Post Method
@@ -39,11 +39,10 @@ router.post("/query", async (req, res) => {
           response.data.choices[0].message != null &&
           response.data.choices[0].message.content != null
         ) {
-          var b = response.data.choices[0].message.content
+          var choiceData = response.data.choices[0].message.content
             .replace(/[\r\n]/gm, "")
             .replace(/\s/g, "");
-          var re = new RegExp('{".*}');
-          var matchedString = b.match(re);
+          var matchedString = choiceData.match(re);
           if (matchedString && matchedString[0]) {
             console.log("es query ===> ", matchedString[0])
             const response = await DslESAPI(JSON.parse(matchedString[0]));
