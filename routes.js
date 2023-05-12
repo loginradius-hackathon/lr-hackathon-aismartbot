@@ -48,7 +48,7 @@ router.post("/query", async (req, res) => {
             const response = await DslESAPI(JSON.parse(matchedString[0]));
             const normalizeResp = {};
             if (response.data.hits) {
-              normalizeResp["statsDate"] = response.data.hits;
+              normalizeResp["statsData"] = response.data.hits;
             }
             if (response.data.aggregations) {
               const aggr = response.data.aggregations;
@@ -56,6 +56,9 @@ router.post("/query", async (req, res) => {
               for (const key in aggr) {
                 if (aggr[key].buckets) {
                   charts[key] = normalizeESData(aggr[key].buckets);
+                }
+                if (aggr[key].value) {
+                  charts[key] = aggr[key].value
                 }
               }
               normalizeResp["chartData"] = charts;
