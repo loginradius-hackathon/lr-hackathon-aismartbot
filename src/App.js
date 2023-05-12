@@ -1,184 +1,79 @@
 import React, { useState } from "react";
 import "./index.css";
-
+import { Chart as ChartJS, registerables } from 'chart.js';
+import { Bar } from 'react-chartjs-2'
 import Logo from "./logo.svg";
+import loading from "./loading.gif";
+
+ChartJS.register(...registerables);
+
 function App() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchTitle,setSearchTitle]= useState("")
-  const mockData={
-    "statsData": {
-        "total": 236
-    },
-    "chartData": {
-        "provider": [
-            {
-                "count": 207,
-                "key": "raas",
-                "data": [
-                    {
-                        "count": 5,
-                        "key": "2022-05-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 20,
-                        "key": "2022-06-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 24,
-                        "key": "2022-07-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 9,
-                        "key": "2022-08-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 2,
-                        "key": "2022-09-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 43,
-                        "key": "2022-10-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 3,
-                        "key": "2022-11-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 5,
-                        "key": "2022-12-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 8,
-                        "key": "2023-01-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 74,
-                        "key": "2023-02-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 6,
-                        "key": "2023-03-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 8,
-                        "key": "2023-04-01T00:00:00.000Z"
-                    }
-                ]
-            },
-            {
-                "count": 26,
-                "key": "google",
-                "data": [
-                    {
-                        "count": 2,
-                        "key": "2022-05-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 2,
-                        "key": "2022-06-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 4,
-                        "key": "2022-07-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 2,
-                        "key": "2022-08-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 0,
-                        "key": "2022-09-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 4,
-                        "key": "2022-10-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 3,
-                        "key": "2022-11-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 2,
-                        "key": "2022-12-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 1,
-                        "key": "2023-01-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 4,
-                        "key": "2023-02-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 1,
-                        "key": "2023-03-01T00:00:00.000Z"
-                    },
-                    {
-                        "count": 1,
-                        "key": "2023-04-01T00:00:00.000Z"
-                    }
-                ]
-            },
-            {
-                "count": 1,
-                "key": "saml_dev-aman",
-                "data": [
-                    {
-                        "count": 1,
-                        "key": "2022-07-01T00:00:00.000Z"
-                    }
-                ]
-            },
-            {
-                "count": 1,
-                "key": "saml_dev-neha100",
-                "data": [
-                    {
-                        "count": 1,
-                        "key": "2022-11-01T00:00:00.000Z"
-                    }
-                ]
-            },
-            {
-                "count": 1,
-                "key": "saml_dev-neha100e",
-                "data": [
-                    {
-                        "count": 1,
-                        "key": "2022-12-01T00:00:00.000Z"
-                    }
-                ]
-            }
-        ]
-    }
+  const [searchResults, setSearchResults] = useState({ statsData: null, chartData: { labels: [], datasets: [] } });
+  const [searchTitle, setSearchTitle] = useState("")
+  const [isLoading, setIsLoading] = useState(false);
+
+    const fetchData = async (message) => {
+      try {
+        const requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+      };
+         const response = await fetch(process.env.REACT_APP_BACKEND_API_URL,requestOptions);
+         const jsonData = await response.json();
+        setData(jsonData);
+        setIsLoading(false);
+      } catch (error) {
+        console.log('Error:', error);
+      }
+    };
+
+
+
+  const randomRgbColor = () => {
+    let r = Math.floor(Math.random() * 256); // Random between 0-255
+    let g = Math.floor(Math.random() * 256); // Random between 0-255
+    let b = Math.floor(Math.random() * 256); // Random between 0-255
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  };
+
+const setData = (results) =>{
+  let datasetsData = []
+      if (results.chartData) {
+        let tempChartData = searchResults.chartData;
+        Object.values(results.chartData)[0].forEach(e => {
+          tempChartData.labels.push(e.key);
+          datasetsData.push(e.count)
+        })
+        tempChartData.datasets = [{ "data": datasetsData, "backgroundColor": randomRgbColor(), "label": Object.keys(results.chartData)[0], "borderWidth": 2 }]
+        setSearchResults({ chartData: tempChartData });
+        return true;
+      }
+      if (results.statsData) {
+        let tempStateData = searchResults;
+        tempStateData.statsData = results.statsData.total
+        setSearchResults(tempStateData);
+        return true;
+      }
 }
-  const handleInputChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
-
   const handleSearch = (event) => {
-    const results = ["data1","data2"];
-    if(event.keyCode)
-    {
-        if(event.keyCode == 13){
-          setSearchResults(results);
-          setSearchTitle(event.currentTarget.value);
-          return true;
-        }
-        else {
-          return false;
-       }
-    
-    }else{
-      setSearchResults(results);
-      return true;
-    }    
-  };
-
+    if (event.currentTarget.tagName === "BUTTON" || (event.keyCode && event.keyCode == 13)) {
+      setSearchResults({ statsData: null, chartData: { labels: [], datasets: [] } })
+      setIsLoading(true);
+      setSearchTitle(document.getElementById("inputbox").value);
+      fetchData(document.getElementById("inputbox").value);
+    }
+  }
   return (
     <div id="page-container">
-      {!searchResults.length && <div id="content-wrap">
+      {isLoading &&
+       <div id="content-wrap">
+       <div className="logo">
+         <img src={loading} />
+       </div>
+     </div>
+      }
+      {(!isLoading && !searchResults.statsData && !searchResults.chartData.labels.length) && <div id="content-wrap">
         <div className="logo">
           <a href="/">
             <img src={Logo} />
@@ -192,28 +87,31 @@ function App() {
           </p>
         </div>
       </div>}
-      {!!searchResults.length &&<div id="content-wrap">
+      {(!isLoading && (!!searchResults.statsData || !!searchResults.chartData.labels.length)) && <div id="content-wrap">
         <div className="heading">
-        <h1>{searchTitle}</h1>
+          <h1>{searchTitle}</h1>
+          {searchResults.statsData && <p>{searchResults.statsData}</p>}
+          <Bar
+            data={searchResults.chartData}
+          />
           <p>
-              {searchResults && searchResults.map((result, index) => (
-                <p key={index}>{result}</p>
-              ))}
           </p>
         </div>
       </div>
-
       }
+
       <div id="search_section">
         <div className="search">
           <input
             type="text"
+            id="inputbox"
             className="searchTerm"
             placeholder="Hint: how many user registered in last 10 days?"
-            onKeyDown={(e)=>handleSearch(e)}
+            onKeyDown={(e) => handleSearch(e)}
           />
-          <button type="submit" className="searchButton" onClick={handleSearch} >
+          <button type="submit" className="searchButton" onClick={handleSearch} id="search" >
             <svg
+              id="search"
               width="24"
               height="24"
               viewBox="0 0 24 24"
@@ -237,16 +135,6 @@ function App() {
             </svg>
           </button>
         </div>
-        {/* <div className="search_results">
-          <p>
-            {searchResults.length > 0}
-            <ul className="results-list">
-              {searchResults.map((result, index) => (
-                <li key={index}>{result}</li>
-              ))}
-            </ul>
-          </p>
-        </div> */}
       </div>
     </div>
   );
