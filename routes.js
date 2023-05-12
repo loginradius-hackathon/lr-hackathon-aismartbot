@@ -58,6 +58,9 @@ router.post("/query", async (req, res) => {
                 if (aggr[key].buckets) {
                   charts[key] = normalizeESData(aggr[key].buckets);
                 }
+                if (aggr[key].value) {
+                  charts[key] = aggr[key].value
+                }
               }
               normalizeResp["chartData"] = charts;
             }
