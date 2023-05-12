@@ -12,6 +12,8 @@ const normalizeESData = (bucket) => {
         obj["key"] = b[k];
       } else if (b[k].buckets) {
         obj["data"] = normalizeESData(b[k].buckets);
+      } else if (b[k].doc_count) {
+        obj[k] = b[k].doc_count
       }
     }
     chartData.push(obj);
