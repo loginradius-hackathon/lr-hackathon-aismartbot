@@ -82,7 +82,7 @@ router.post("/query", async (req, res) => {
 });
 
 router.post("/esrecords", async (req, res) => {
-  const response = await DslESAPI(req.body.esquery);
+  const response = await DslESAPI(req.body);
   const normalizeResp = {};
   if (response.data.hits) {
     normalizeResp["statsData"] = response.data.hits;
