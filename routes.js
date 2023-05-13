@@ -2,7 +2,7 @@ require("dotenv").config();
 const NodeCache = require("node-cache");
 const myCache = new NodeCache();
 let prompt =
-  'Here is your Elastic Search Schema: {"properties":{"Age":{"type":"integer","normalizer":"lower_case_normalizer"},"CreatedDate":{"type":"date","normalizer":"lower_case_normalizer"},"EmailVerified":{"type":"boolean","normalizer":"lower_case_normalizer"},"LocalCountry":{"type":"text","normalizer":"lower_case_normalizer"},"Provider":{"type":"text","normalizer":"lower_case_normalizer"},"NoOfLogins":{"type":"int","normalizer":"lower_case_normalizer"},"BirthDate":{"type":"date","format":"MM-dd-yyyy"},"Gender":{"type":"keyword","normalizer":"lower_case_normalizer"},"user_agent":{"properties":{"device":{"properties":{"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"original":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"os":{"properties":{"full":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"version":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}}}}}} Take Gender Male as M and Female as F and rest a U';
+  'Here is your Elastic Search Schema: {"properties":{"Age":{"type":"integer","normalizer":"lower_case_normalizer"},"CreatedDate":{"type":"date","normalizer":"lower_case_normalizer"},"EmailVerified":{"type":"boolean","normalizer":"lower_case_normalizer"},"LocalCountry":{"type":"text","normalizer":"lower_case_normalizer"},"Provider":{"type":"text","normalizer":"lower_case_normalizer"},"NoOfLogins":{"type":"int","normalizer":"lower_case_normalizer"},"BirthDate":{"type":"date","format":"MM-dd-yyyy"},"Gender":{"type":"keyword","normalizer":"lower_case_normalizer"},"user_agent":{"properties":{"device":{"properties":{"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"original":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"os":{"properties":{"full":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"version":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}}}}}} Take Gender Male as M and Female as F and rest as U.';
 
 const moment = require("moment");
 const express = require("express");
@@ -10,21 +10,21 @@ const axios = require("axios");
 const { normalizeESData, processComplexData, parseDateKey } = require("./helper");
 const re = new RegExp(`\{.*}`)
 const router = express.Router();
-
+const cacheTime = process.env.CACHE_TIME || 900
 //Post Method
 router.post("/query", async (req, res) => {
   req.body.message = req.body.message.replace(/\s+/g, ' ').trim().toLowerCase();
   appName = process.env.DSL_ES_APPNAME
-  if (req.query.appname != undefined && req.query.appname.trim() != "") {
-    appName = req.query.appname.toLowerCase();
+  if (req.body.appname != undefined && req.body.appname.trim() != "") {
+    appName = req.body.appname.toLowerCase();
   }
   console.log(appName)
   var cache = !req.body.realtime
   let key = `${appName}_${req.body.message}`
   console.log("Query-->>", req.body.message)
-  cachedData=myCache.get(key)
+  cachedData = myCache.get(key)
   if (cachedData && cache) {
-    console.log("Response from cache==>",cachedData)
+    console.log("Response from cache==>", cachedData)
     res.json(cachedData)
   } else {
     try {
@@ -94,7 +94,7 @@ router.post("/query", async (req, res) => {
                 normalizeResp["chartData"] = charts;
               }
               console.log("Response===>>", normalizeResp)
-              myCache.set(key, normalizeResp, 900)
+              myCache.set(key, normalizeResp, cacheTime)
               res.json(normalizeResp);
             } else {
               res.statusCode = 403
