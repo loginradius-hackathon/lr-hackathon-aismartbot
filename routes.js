@@ -9,7 +9,7 @@ const axios = require("axios");
 const { normalizeESData, processComplexData } = require("./helper");
 const re = new RegExp(`\{.*}`)
 const router = express.Router();
-
+const cacheTime = process.env.CACHE_TIME || 900
 //Post Method
 router.post("/query", async (req, res) => {
   req.body.message = req.body.message.replace(/\s+/g, ' ').trim().toLowerCase();
@@ -89,7 +89,7 @@ router.post("/query", async (req, res) => {
                 normalizeResp["chartData"] = charts;
               }
               console.log("Response===>>", normalizeResp)
-              myCache.set(key, normalizeResp, 900)
+              myCache.set(key, normalizeResp, cacheTime)
               res.json(normalizeResp);
             } else {
               res.statusCode = 403
