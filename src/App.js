@@ -16,10 +16,10 @@ function App() {
       try {
         const requestOptions = {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'realtime':(message.includes("real time") ||message.includes("realtime")) ?true:false },
-          body: JSON.stringify({ message:message.replace('realtime','').replace('real time','') })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message:message.replace('realtime','').replace('real time','') , 'realtime':(message.includes("real time") ||message.includes("realtime")) ?true:false})
       };
-         const response = await fetch(process.env.REACT_APP_BACKEND_API_URL,requestOptions);
+         const response = await fetch(process.env.REACT_APP_BACKEND_API_URL,requestOptions)
          const jsonData = await response.json();
         setData(jsonData);
         setIsLoading(false);
@@ -39,8 +39,11 @@ function App() {
 
 const setData = (results) =>{
   let datasetsData = []
-      if (results.chartData && Object.keys(results.chartData).length) {
+      if (results.chartData && Object.keys(results.chartData).length &&  Object.keys(results.chartData)[0].constructor==Object) {
+    
+      
         let tempChartData ={ labels: [], datasets: [] };
+        
         Object.values(results.chartData)[0].forEach(e => {
           tempChartData.labels.push(e.key);
           datasetsData.push(e.count)
@@ -48,7 +51,14 @@ const setData = (results) =>{
         tempChartData.datasets = [{ "data": datasetsData, "backgroundColor": randomRgbColor(), "label": Object.keys(results.chartData)[0], "borderWidth": 2 }]
         setSearchResults({ chartData: tempChartData });
         return true;
-      }
+      
+      // else{
+      //   tempChartData.labels=Object.keys(results.chartData)[0]
+      //   tempChartData.datasets=[{ "data": [Object.keys(results.chartData)[0]], "backgroundColor": randomRgbColor(), "label": Object.keys(results.chartData)[0], "borderWidth": 2 }]
+      //   setSearchResults({ chartData: tempChartData });
+      // }
+      
+    }
       if (results.statsData) {
         let tempStateData = searchResults;
         tempStateData.statsData = results.statsData.total
