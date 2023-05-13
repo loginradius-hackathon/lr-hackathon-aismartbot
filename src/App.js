@@ -40,21 +40,23 @@ function App() {
 const setData = (results) =>{
   let datasetsData = []
   let tempChartData ={ labels: [], datasets: [] };
-      if (results.chartData && Object.keys(results.chartData).length &&  Array.isArray(results.chartData[Object.keys(results.chartData)[0]])) {      
-        Object.values(results.chartData)[0].forEach(e => {
-          tempChartData.labels.push(e.key);
-          datasetsData.push(e.count)
-        })
-        tempChartData.datasets = [{ "data": datasetsData, "backgroundColor": randomRgbColor(), "label": Object.keys(results.chartData)[0], "borderWidth": 2 }]
-        setSearchResults({ chartData: tempChartData });
-        return true;
-      
-      // else{
-      //   tempChartData.labels=Object.keys(results.chartData)[0]
-      //   tempChartData.datasets=[{ "data": [Object.keys(results.chartData)[0]], "backgroundColor": randomRgbColor(), "label": Object.keys(results.chartData)[0], "borderWidth": 2 }]
-      //   setSearchResults({ chartData: tempChartData });
-      // }
-      
+      if (results.chartData && Object.keys(results.chartData).length ) {     
+        if(Array.isArray(results.chartData[Object.keys(results.chartData)[0]]))
+        {
+          Object.values(results.chartData)[0].forEach(e => {
+            tempChartData.labels.push(e.key);
+            datasetsData.push(e.count)
+          })
+          tempChartData.datasets = [{ "data": datasetsData, "backgroundColor": randomRgbColor(), "label": Object.keys(results.chartData)[0], "borderWidth": 2 }]
+          setSearchResults({ chartData: tempChartData });
+        } 
+       else{
+        let tempStateData = searchResults;
+        tempStateData.statsData = results.chartData[Object.keys(results.chartData)[0]]
+        tempStateData.chartData =tempChartData
+        setSearchResults(tempStateData);
+       }
+       return true;      
     }else if(results.statsData) {
         let tempStateData = searchResults;
         tempStateData.statsData = results.statsData.total
