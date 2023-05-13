@@ -16,8 +16,8 @@ function App() {
       try {
         const requestOptions = {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message })
+          headers: { 'Content-Type': 'application/json', 'realtime':(message.includes("real time") ||message.includes("realtime")) ?true:false },
+          body: JSON.stringify({ message:message.replace('realtime','').replace('real time','') })
       };
          const response = await fetch(process.env.REACT_APP_BACKEND_API_URL,requestOptions);
          const jsonData = await response.json();
@@ -40,7 +40,7 @@ function App() {
 const setData = (results) =>{
   let datasetsData = []
       if (results.chartData && Object.keys(results.chartData).length) {
-        let tempChartData = searchResults.chartData;
+        let tempChartData ={ labels: [], datasets: [] };
         Object.values(results.chartData)[0].forEach(e => {
           tempChartData.labels.push(e.key);
           datasetsData.push(e.count)
