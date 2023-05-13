@@ -12,12 +12,19 @@ const router = express.Router();
 
 //Post Method
 router.post("/query", async (req, res) => {
-  req.body.message=req.body.message.replace(/\s+/g, ' ').trim().toLowerCase();
-  var cache=!req.body.realtime
-  let key = `${process.env.DSL_ES_APPNAME}_${req.body.message}`
+  req.body.message = req.body.message.replace(/\s+/g, ' ').trim().toLowerCase();
+  appName = process.env.DSL_ES_APPNAME
+  if (req.query.appname != undefined && req.query.appname.trim() != "") {
+    appName = req.query.appname.toLowerCase();
+  }
+  console.log(appName)
+  var cache = !req.body.realtime
+  let key = `${appName}_${req.body.message}`
   console.log("Query-->>", req.body.message)
-  if (myCache.get(key) && cache) {
-    res.json(myCache.get(key))
+  cachedData=myCache.get(key)
+  if (cachedData && cache) {
+    console.log("Response from cache==>",cachedData)
+    res.json(cachedData)
   } else {
     try {
       let message = `Give ES Query for : ${req.body.message} with no explanation`;
@@ -135,7 +142,7 @@ async function DslESAPI(esquery, res) {
   ).toString("base64");
   try {
     const response = await axios.post(
-      `${process.env.DSL_ES_ENDPOINT}?appName=${process.env.DSL_ES_APPNAME}&type=${process.env.DSL_ES_COLLECTION}`,
+      `${process.env.DSL_ES_ENDPOINT}?appName=${appName}&type=${process.env.DSL_ES_COLLECTION}`,
       esquery,
       {
         headers: {
