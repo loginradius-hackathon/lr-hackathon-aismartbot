@@ -4,9 +4,10 @@ const myCache = new NodeCache();
 let prompt =
   'Here is your Elastic Search Schema: {"properties":{"Age":{"type":"integer","normalizer":"lower_case_normalizer"},"CreatedDate":{"type":"date","normalizer":"lower_case_normalizer"},"EmailVerified":{"type":"boolean","normalizer":"lower_case_normalizer"},"LocalCountry":{"type":"text","normalizer":"lower_case_normalizer"},"Provider":{"type":"text","normalizer":"lower_case_normalizer"},"NoOfLogins":{"type":"int","normalizer":"lower_case_normalizer"},"BirthDate":{"type":"date","format":"MM-dd-yyyy"},"Gender":{"type":"keyword","normalizer":"lower_case_normalizer"},"user_agent":{"properties":{"device":{"properties":{"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"original":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"os":{"properties":{"full":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"version":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}}}}}} Take Gender Male as M and Female as F and rest as U.';
 
+const moment = require("moment");
 const express = require("express");
 const axios = require("axios");
-const { normalizeESData, processComplexData } = require("./helper");
+const { normalizeESData, processComplexData, parseDateKey } = require("./helper");
 const re = new RegExp(`\{.*}`)
 const router = express.Router();
 const cacheTime = process.env.CACHE_TIME || 900
@@ -76,11 +77,15 @@ router.post("/query", async (req, res) => {
                 const aggr = response.data.aggregations;
                 const charts = {};
                 for (const key in aggr) {
-                  if (aggr[key].buckets) {
-                    charts[key] = normalizeESData(aggr[key].buckets);
-                    if (charts[key][0].data) {
-                      charts[key] = processComplexData(charts[key])
+                  if (aggr[key].buckets && aggr[key].buckets.length) {
+                    let normalizeData = normalizeESData(aggr[key].buckets);
+                    if (normalizeData[0].data) {
+                      normalizeData = processComplexData(normalizeData)
                     }
+                    if (normalizeData[0].key && moment(normalizeData[0].key).isValid()) {
+                      normalizeData = parseDateKey(normalizeData)
+                    }
+                    charts[key] = normalizeData;
                   }
                   if (aggr[key].value) {
                     charts[key] = aggr[key].value
@@ -102,7 +107,7 @@ router.post("/query", async (req, res) => {
         })
         .catch((error) => {
           res.statusCode = 403
-          res.json({ Message: error });
+          res.json({ Message: error.message });
         });
     } catch (ex) {
       res.statusCode = 403
