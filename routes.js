@@ -66,36 +66,44 @@ router.post("/query", async (req, res) => {
               if (matchedString[0].includes(".keyword")) {
                 matchedString[0] = matchedString[0].replace(/.keyword/g, "")
               }
+              if (matchedString[0].includes("`")) {
+                index=matchedString[0].indexOf("`")
+                matchedString[0] = matchedString[0].substring(0,index)
+              }
               console.log("es query ===> ", matchedString[0])
               const response = await DslESAPI(JSON.parse(matchedString[0]));
-              console.log("DSL-ES Response", response.data)
               const normalizeResp = {};
-              if (response.data.hits) {
-                normalizeResp["statsData"] = response.data.hits;
-              }
-              if (response.data.aggregations) {
-                const aggr = response.data.aggregations;
-                const charts = {};
-                for (const key in aggr) {
-                  if (aggr[key].buckets && aggr[key].buckets.length) {
-                    let normalizeData = normalizeESData(aggr[key].buckets);
-                    if (normalizeData[0].data) {
-                      normalizeData = processComplexData(normalizeData)
-                    }
-                    if (normalizeData[0].key && moment(normalizeData[0].key).isValid()) {
-                      normalizeData = parseDateKey(normalizeData)
-                    }
-                    charts[key] = normalizeData;
-                  }
-                  if (aggr[key].value) {
-                    charts[key] = aggr[key].value
-                  }
+              if (response.data) {
+                if (response.data.hits) {
+                  normalizeResp["statsData"] = response.data.hits;
                 }
-                normalizeResp["chartData"] = charts;
+                if (response.data.aggregations) {
+                  const aggr = response.data.aggregations;
+                  const charts = {};
+                  for (const key in aggr) {
+                    if (aggr[key].buckets && aggr[key].buckets.length) {
+                      let normalizeData = normalizeESData(aggr[key].buckets);
+                      if (normalizeData[0].data) {
+                        normalizeData = processComplexData(normalizeData)
+                      }
+                      if (normalizeData[0].key && moment(normalizeData[0].key).isValid()) {
+                        normalizeData = parseDateKey(normalizeData)
+                      }
+                      charts[key] = normalizeData;
+                    }
+                    if (aggr[key].value) {
+                      charts[key] = aggr[key].value
+                    }
+                  }
+                  normalizeResp["chartData"] = charts;
+                }
+                console.log("Response===>>", normalizeResp)
+                myCache.set(key, normalizeResp, cacheTime)
+                res.json(normalizeResp);
+              }else{
+                res.statusCode = 403
+                res.json({ Message: "Invalid query" });
               }
-              console.log("Response===>>", normalizeResp)
-              myCache.set(key, normalizeResp, cacheTime)
-              res.json(normalizeResp);
             } else {
               res.statusCode = 403
               res.json({ Message: "Invalid query" });
