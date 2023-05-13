@@ -15,8 +15,8 @@ const cacheTime = process.env.CACHE_TIME || 900
 router.post("/query", async (req, res) => {
   req.body.message = req.body.message.replace(/\s+/g, ' ').trim().toLowerCase();
   appName = process.env.DSL_ES_APPNAME
-  if (req.query.appname != undefined && req.query.appname.trim() != "") {
-    appName = req.query.appname.toLowerCase();
+  if (req.body.appname != undefined && req.body.appname.trim() != "") {
+    appName = req.body.appname.toLowerCase();
   }
   console.log(appName)
   var cache = !req.body.realtime
