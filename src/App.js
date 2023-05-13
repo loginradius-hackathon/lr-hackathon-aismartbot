@@ -26,7 +26,7 @@ function App() {
             message.includes("real time") || message.includes("realtime")
               ? true
               : false,
-          appname: message.replace(/(.*from\s+)(.*)(\s+app.*)/, "$2").trim()
+          appname: /(.*from\s+)(.*)(\s+app.*)/.exec(message)?message.replace(/(.*from\s+)(.*)(\s+app.*)/, "$2").trim():undefined
         }),
       };
       const response = await fetch(
