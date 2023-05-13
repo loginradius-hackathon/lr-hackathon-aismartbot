@@ -52,7 +52,7 @@ const setData = (results) =>{
         } 
        else{
         let tempStateData = searchResults;
-        tempStateData.statsData = results.chartData[Object.keys(results.chartData)[0]]
+        tempStateData.statsData = Math.round(results.chartData[Object.keys(results.chartData)[0]])
         tempStateData.chartData =tempChartData
         setSearchResults(tempStateData);
        }
