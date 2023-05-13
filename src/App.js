@@ -39,12 +39,8 @@ function App() {
 
 const setData = (results) =>{
   let datasetsData = []
-  console.log(Object.keys(results.chartData)[0].constructor)
-      if (results.chartData && Object.keys(results.chartData).length) {
-    
-      
-        let tempChartData ={ labels: [], datasets: [] };
-        
+  let tempChartData ={ labels: [], datasets: [] };
+      if (results.chartData && Object.keys(results.chartData).length &&  Array.isArray(results.chartData[Object.keys(results.chartData)[0]])) {      
         Object.values(results.chartData)[0].forEach(e => {
           tempChartData.labels.push(e.key);
           datasetsData.push(e.count)
@@ -59,10 +55,10 @@ const setData = (results) =>{
       //   setSearchResults({ chartData: tempChartData });
       // }
       
-    }
-      if (results.statsData) {
+    }else if(results.statsData) {
         let tempStateData = searchResults;
         tempStateData.statsData = results.statsData.total
+        tempStateData.chartData =tempChartData
         setSearchResults(tempStateData);
         return true;
       }
