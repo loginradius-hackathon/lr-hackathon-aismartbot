@@ -27,11 +27,11 @@ const processComplexData = (data) => {
     let others = obj.count;
     if (obj.data) {
       obj.data.forEach(cObj => {
-        columnObj[`${cObj.key}_count`] = cObj.count;
+        columnObj[cObj.key] = cObj.count;
         others -= cObj.count
       })
       if (others > 0) {
-        columnObj[`others_count`] = others;
+        columnObj[`others`] = others;
       }
       delete columnObj["count"]
       delete columnObj["data"]
