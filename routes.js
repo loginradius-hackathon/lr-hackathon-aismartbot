@@ -1,10 +1,10 @@
 require("dotenv").config();
 let prompt =
-  'Here is your Elastic Search Schema: {"properties":{"Age":{"type":"int","normalizer":"lower_case_normalizer"},"CreatedDate":{"type":"date","normalizer":"lower_case_normalizer"},"EmailVerified":{"type":"bool","normalizer":"lower_case_normalizer"},"LocalCountry":{"type":"text","normalizer":"lower_case_normalizer"},"Provider":{"type":"keyword","normalizer":"lower_case_normalizer"},"NoOfLogins":{"type":"int","normalizer":"lower_case_normalizer"},"BirthDate":{"type":"date","format":"MM-dd-yyyy"},"Gender":{"type":"keyword","normalizer":"lower_case_normalizer"},"Email":{"type":"nested","properties":{"Type":{"type":"keyword","normalizer":"lower_case_normalizer"},"Value":{"type":"text","analyzer":"email","fields":{"raw":{"type":"keyword","normalizer":"lower_case_normalizer"}}}}},"user_agent":{"properties":{"device":{"properties":{"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"original":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"os":{"properties":{"full":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"version":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}}}}}} Take Gender Male as M and Female as F and rest a U';
+  'Here is your Elastic Search Schema: {"properties":{"Age":{"type":"integer","normalizer":"lower_case_normalizer"},"CreatedDate":{"type":"date","normalizer":"lower_case_normalizer"},"EmailVerified":{"type":"boolean","normalizer":"lower_case_normalizer"},"LocalCountry":{"type":"text","normalizer":"lower_case_normalizer"},"Provider":{"type":"text","normalizer":"lower_case_normalizer"},"NoOfLogins":{"type":"int","normalizer":"lower_case_normalizer"},"BirthDate":{"type":"date","format":"MM-dd-yyyy"},"Gender":{"type":"keyword","normalizer":"lower_case_normalizer"},"user_agent":{"properties":{"device":{"properties":{"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"original":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"os":{"properties":{"full":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}},"version":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}}}}}} Take Gender Male as M and Female as F and rest a U';
 
 const express = require("express");
 const axios = require("axios");
-const { normalizeESData } = require("./helper");
+const { normalizeESData, processComplexData } = require("./helper");
 const re = new RegExp(`\{.*}`)
 const router = express.Router();
 
@@ -44,6 +44,11 @@ router.post("/query", async (req, res) => {
             .replace(/\s/g, "");
           var matchedString = choiceData.match(re);
           if (matchedString && matchedString[0]) {
+            /* * AI is adding .keyword with text fields like Provider and LocalCountry 
+               *  data is not comming, so fixed that part by this logic  */
+            if (matchedString[0].includes(".keyword")) {
+              matchedString[0] = matchedString[0].replace(/.keyword/g, "")
+            }
             console.log("es query ===> ", matchedString[0])
             const response = await DslESAPI(JSON.parse(matchedString[0]));
             const normalizeResp = {};
@@ -56,6 +61,9 @@ router.post("/query", async (req, res) => {
               for (const key in aggr) {
                 if (aggr[key].buckets) {
                   charts[key] = normalizeESData(aggr[key].buckets);
+                  if (charts[key][0].data) {
+                    charts[key] = processComplexData(charts[key])
+                  }
                 }
                 if (aggr[key].value) {
                   charts[key] = aggr[key].value
@@ -91,6 +99,9 @@ router.post("/esrecords", async (req, res) => {
     for (const key in aggr) {
       if (aggr[key].buckets) {
         charts[key] = normalizeESData(aggr[key].buckets);
+        if (charts[key][0].data) {
+          charts[key] = processComplexData(charts[key])
+        }
       }
     }
     normalizeResp["chartData"] = charts;
