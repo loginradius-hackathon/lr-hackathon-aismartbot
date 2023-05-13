@@ -73,7 +73,7 @@ const setData = (results) =>{
       fetchData(document.getElementById("inputbox").value);
     }
   }
-  return (
+    return (
     <div id="page-container">
       {isLoading &&
        <div id="content-wrap">
@@ -82,7 +82,7 @@ const setData = (results) =>{
        </div>
      </div>
       }
-      {(!isLoading && !searchResults.statsData && !searchResults.chartData.labels.length) && <div id="content-wrap">
+      {(!isLoading && (searchResults.statsData == null && searchResults.chartData.labels.length==0)) && <div id="content-wrap">
         <div className="logo">
           <a href="/">
             <img src={Logo} />
@@ -96,7 +96,7 @@ const setData = (results) =>{
           </p>
         </div>
       </div>}
-      {(!isLoading && (!!searchResults.statsData || !!searchResults.chartData.labels.length)) && <div id="content-wrap">
+      {(!isLoading && (searchResults.statsData != null || searchResults.chartData.labels.length>0)) && <div id="content-wrap">
         <div className="heading">
           <h1>{searchTitle}</h1>
           {searchResults.statsData && <p>{searchResults.statsData}</p>}
@@ -108,7 +108,7 @@ const setData = (results) =>{
         </div>
       </div>
       }
-
+      
       <div id="search_section">
         <div className="search">
           <input
