@@ -10,9 +10,9 @@ const router = express.Router();
 
 //Post Method
 router.post("/query", async (req, res) => {
-  console.log("Query-->>",req.body.message)
+  console.log("Query-->>", req.body.message)
   try {
-    let message = `Give ES Query for : ${req.body.message}`;
+    let message = `Give ES Query for : ${req.body.message} with no explanation`;
     const payload = {
       model: "gpt-3.5-turbo",
       messages: [
@@ -47,6 +47,7 @@ router.post("/query", async (req, res) => {
           if (matchedString && matchedString[0]) {
             console.log("es query ===> ", matchedString[0])
             const response = await DslESAPI(JSON.parse(matchedString[0]));
+            console.log("DSL-ES Response", response.data)
             const normalizeResp = {};
             if (response.data.hits) {
               normalizeResp["statsData"] = response.data.hits;
@@ -64,20 +65,24 @@ router.post("/query", async (req, res) => {
               }
               normalizeResp["chartData"] = charts;
             }
-            console.log("Response===>>",normalizeResp)
+            console.log("Response===>>", normalizeResp)
             res.json(normalizeResp);
           } else {
-            res.json(ParsedResponse);
+            res.statusCode = 403
+            res.json({ Message: "Invalid query" });
           }
         } else {
-          res.json(ParsedResponse);
+          res.statusCode = 403
+          res.json({ Message: "Invalid query" });
         }
       })
       .catch((error) => {
-        res.json({ response: error });
+        res.statusCode = 403
+        res.json({ Message: error});
       });
   } catch (ex) {
-    res.json({ resposne: ex });
+    res.statusCode = 403
+    res.json({ Message: "Invalid query" });
   }
 });
 
