@@ -10,10 +10,10 @@ const normalizeESData = (bucket) => {
         obj["count"] = b[k];
       } else if (k === "key_as_string") {
         obj["key"] = b[k];
-      } else if (b[k].buckets) {
-        obj["data"] = normalizeESData(b[k].buckets);
       } else if (b[k].doc_count) {
         obj[k] = b[k].doc_count
+      } else if (b[k].buckets) {
+        obj["data"] = normalizeESData(b[k].buckets);
       }
     }
     chartData.push(obj);
@@ -21,4 +21,24 @@ const normalizeESData = (bucket) => {
   return chartData;
 };
 
-module.exports = { normalizeESData };
+const processComplexData = (data) => {
+  const chartData = data.map(obj => {
+    const columnObj = { ...obj }
+    let others = obj.count;
+    if (obj.data) {
+      obj.data.forEach(cObj => {
+        columnObj[`${cObj.key}_count`] = cObj.count;
+        others -= cObj.count
+      })
+      if (others > 0) {
+        columnObj[`others_count`] = others;
+      }
+      delete columnObj["count"]
+      delete columnObj["data"]
+    }
+    return columnObj;
+  })
+  return chartData;
+}
+
+module.exports = { normalizeESData, processComplexData };
