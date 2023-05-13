@@ -39,7 +39,8 @@ function App() {
 
 const setData = (results) =>{
   let datasetsData = []
-      if (results.chartData && Object.keys(results.chartData).length &&  Object.keys(results.chartData)[0].constructor==Object) {
+  console.log(Object.keys(results.chartData)[0].constructor)
+      if (results.chartData && Object.keys(results.chartData).length) {
     
       
         let tempChartData ={ labels: [], datasets: [] };
