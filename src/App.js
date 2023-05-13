@@ -21,11 +21,12 @@ function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: message.replace("realtime", "").replace("real time", ""),
+          message: message.replace("realtime", "").replace("real time", "").replace('from ' + message.replace(/(.*from\s+)(.*)(\s+app.*)/, "$2").trim() + ' app', ""),
           realtime:
             message.includes("real time") || message.includes("realtime")
               ? true
               : false,
+          appname: message.replace(/(.*from\s+)(.*)(\s+app.*)/, "$2").trim()
         }),
       };
       const response = await fetch(
@@ -91,8 +92,7 @@ function App() {
       event.currentTarget.tagName === "BUTTON" ||
       (event.keyCode && event.keyCode == 13)
     ) {
-      if(document.getElementById("inputbox").value.trim())
-      {
+      if (document.getElementById("inputbox").value.trim()) {
         setSearchResults({ statsData: null, chartData: null });
         setIsLoading(true);
         setSearchTitle(document.getElementById("inputbox").value);
