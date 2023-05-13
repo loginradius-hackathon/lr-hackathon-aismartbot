@@ -63,7 +63,7 @@ router.post("/query", async (req, res) => {
             if (matchedString && matchedString[0]) {
               /* * AI is adding .keyword with text fields like Provider and LocalCountry 
                  *  data is not comming, so fixed that part by this logic  */
-              if (matchedString[0].includes(".keyword")) {
+              if (matchedString[0].includes(".keyword") && !matchedString[0].includes("user_agent")) {
                 matchedString[0] = matchedString[0].replace(/.keyword/g, "")
               }
               if (matchedString[0].includes("`")) {
