@@ -8,7 +8,7 @@ import loading from "./loading.gif";
 ChartJS.register(...registerables);
 
 function App() {
-  const [searchResults, setSearchResults] = useState({ statsData: null, chartData: { labels: [], datasets: [] } });
+  const [searchResults, setSearchResults] = useState({ statsData: null, chartData: null });
   const [searchTitle, setSearchTitle] = useState("")
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,36 +38,40 @@ function App() {
   };
 
 const setData = (results) =>{
-  let datasetsData = []
-  let tempChartData ={ labels: [], datasets: [] };
-      if (results.chartData && Object.keys(results.chartData).length ) {     
+
+      if (results.chartData && Object.keys(results.chartData).length ) {    
         if(Array.isArray(results.chartData[Object.keys(results.chartData)[0]]))
-        {
-          Object.values(results.chartData)[0].forEach(e => {
-            tempChartData.labels.push(e.key);
-            datasetsData.push(e.count)
+        { let chartData=[];
+          Object.keys(results.chartData).forEach((e,i)=>{
+            let tempChartData ={ labels: [], datasets: [] };
+            let datasetsData = []
+            results.chartData[e].forEach(item => {
+              tempChartData.labels.push(item.key);
+              datasetsData.push(item.count)
+            })
+            tempChartData.datasets = [{ "data": datasetsData, "backgroundColor": randomRgbColor(), "label": Object.keys(results.chartData)[i], "borderWidth": 2 }]
+            chartData.push(tempChartData)
           })
-          tempChartData.datasets = [{ "data": datasetsData, "backgroundColor": randomRgbColor(), "label": Object.keys(results.chartData)[0], "borderWidth": 2 }]
-          setSearchResults({ chartData: tempChartData });
+          setSearchResults({ chartData: chartData });
         } 
        else{
         let tempStateData = searchResults;
+        tempStateData.chartData =null
         tempStateData.statsData = Math.round(results.chartData[Object.keys(results.chartData)[0]])
-        tempStateData.chartData =tempChartData
         setSearchResults(tempStateData);
        }
        return true;      
     }else if(results.statsData) {
         let tempStateData = searchResults;
         tempStateData.statsData = results.statsData.total
-        tempStateData.chartData =tempChartData
-        setSearchResults(tempStateData);
+        tempStateData.chartData =null
+                setSearchResults(tempStateData);
         return true;
       }
 }
   const handleSearch = (event) => {
     if (event.currentTarget.tagName === "BUTTON" || (event.keyCode && event.keyCode == 13)) {
-      setSearchResults({ statsData: null, chartData: { labels: [], datasets: [] } })
+      setSearchResults({ statsData: null, chartData: null})
       setIsLoading(true);
       setSearchTitle(document.getElementById("inputbox").value);
       fetchData(document.getElementById("inputbox").value);
@@ -82,7 +86,7 @@ const setData = (results) =>{
        </div>
      </div>
       }
-      {(!isLoading && (searchResults.statsData == null && searchResults.chartData.labels.length==0)) && <div id="content-wrap">
+      {(!isLoading && (searchResults.statsData == null && searchResults.chartData==null)) && <div id="content-wrap">
         <div className="logo">
           <a href="/">
             <img src={Logo} />
@@ -96,13 +100,14 @@ const setData = (results) =>{
           </p>
         </div>
       </div>}
-      {(!isLoading && (searchResults.statsData != null || searchResults.chartData.labels.length>0)) && <div id="content-wrap">
+      {(!isLoading && (searchResults.statsData != null || searchResults.chartData!=null)) && <div id="content-wrap">
         <div className="heading">
           <h1>{searchTitle}</h1>
           {searchResults.statsData && <p>{searchResults.statsData}</p>}
-          {!!searchResults.chartData.labels.length && <Bar
-            data={searchResults.chartData}
-          />}
+          {searchResults.chartData && searchResults.chartData.map((e,i)=><Bar
+            data={e}
+            key={i+Math.random()}
+          />)}
           <p>
           </p>
         </div>
