@@ -14,6 +14,7 @@ function App() {
   });
   const [searchTitle, setSearchTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const fetchData = async (message) => {
     try {
@@ -34,9 +35,13 @@ function App() {
         requestOptions
       );
       const jsonData = await response.json();
+      setError(Object.keys(jsonData).length === 0 || jsonData.Message?"We are facing some issue now, please try again after some time":"");
+
       setData(jsonData);
       setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
+      setError("We are facing some issue now, please try again after some time");
       console.log("Error:", error);
     }
   };
@@ -72,8 +77,8 @@ function App() {
         setSearchResults({ chartData: chartData });
       } else {
         let tempStateData = searchResults;
-        tempStateData.chartData = null;
-        tempStateData.statsData = Math.round(
+        tempStateData.chartData = null; 
+        tempStateData.statsData = Math.ceil(
           results.chartData[Object.keys(results.chartData)[0]]
         );
         setSearchResults(tempStateData);
@@ -95,6 +100,7 @@ function App() {
       if (document.getElementById("inputbox").value.trim()) {
         setSearchResults({ statsData: null, chartData: null });
         setIsLoading(true);
+        setError("");
         setSearchTitle(document.getElementById("inputbox").value);
         fetchData(document.getElementById("inputbox").value);
       }
@@ -120,7 +126,7 @@ function App() {
                 </a>
               </div>
             </header>
-            <div id="landing-wrap">
+            {!error && <div id="landing-wrap">
               <div className="heading">
                 <h1>
                   Ask questions in <span>plain English</span> and get meaningful
@@ -134,7 +140,14 @@ function App() {
                   <img src={arrowDown} />
                 </div>
               </div>
-            </div>
+            </div>}
+            {error && <div id="landing-wrap">
+              <div className="heading">
+                <p>
+                  {error}
+                </p>
+              </div>
+            </div>}
           </div>
         )}
       {!isLoading &&
@@ -145,8 +158,8 @@ function App() {
               <h2>{searchTitle}</h2>
             </header>
             <div>
-              {searchResults.statsData && <p>{searchResults.statsData}</p>}
-              {searchResults.chartData &&
+              {searchResults.statsData !=null && <p>{searchResults.statsData}</p>}
+              {searchResults.chartData !=null &&
                 searchResults.chartData.map((e, i) => (
                   <Bar data={e} key={i + Math.random()} />
                 ))}
