@@ -36,4 +36,4 @@ If you need to update `npm`, you can make it using `npm`! Cool right? After runn
 
 ## Running the project
     
-    $ node index.js
+    $ node testhandler.js // This is the test hanlder to check the aws lambda request.

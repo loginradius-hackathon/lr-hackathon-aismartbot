@@ -12,23 +12,32 @@ const re = new RegExp(`\{.*}`)
 const router = express.Router();
 const cacheTime = process.env.CACHE_TIME || 900
 //Post Method
-router.post("/query", async (req, res) => {
-  req.body.message = req.body.message.replace(/\s+/g, ' ').trim().toLowerCase();
+exports.handler = async (event) => {
+  let finalResponse={}
+  //router.post("/query", async (req, res) => {
+  let message = event[`message`]
+  message = message.replace(/\s+/g, ' ').trim().toLowerCase();
+  let bodyAppName = event['appname']
+  let realtime = event['realtime']
   appName = process.env.DSL_ES_APPNAME
-  if (req.body.appname != undefined && req.body.appname.trim() != "") {
-    appName = req.body.appname.toLowerCase();
+  if (bodyAppName != undefined && bodyAppName.trim() != "") {
+    appName = bodyAppName.toLowerCase();
   }
   console.log(appName)
-  var cache = !req.body.realtime
-  let key = `${appName}_${req.body.message}`
-  console.log("Query-->>", req.body.message)
+  var cache = !realtime
+  let key = `${appName}_${message}`
+  console.log("Query-->>", message)
   cachedData = myCache.get(key)
   if (cachedData && cache) {
     console.log("Response from cache==>", cachedData)
-    res.json(cachedData)
+    finalResponse = {
+      status: 200,
+      response: JSON.stringify(cachedData)
+    }
+
   } else {
     try {
-      let message = `Give ES Query for : ${req.body.message} with no explanation`;
+      message = `Give ES Query for : ${message} with no explanation`;
       const payload = {
         model: "gpt-3.5-turbo",
         messages: [
@@ -50,6 +59,7 @@ router.post("/query", async (req, res) => {
           },
         })
         .then(async (response) => {
+          
           if (
             response.data != null &&
             response.data.choices != null &&
@@ -67,8 +77,8 @@ router.post("/query", async (req, res) => {
                 matchedString[0] = matchedString[0].replace(/.keyword/g, "")
               }
               if (matchedString[0].includes("`")) {
-                index=matchedString[0].indexOf("`")
-                matchedString[0] = matchedString[0].substring(0,index)
+                index = matchedString[0].indexOf("`")
+                matchedString[0] = matchedString[0].substring(0, index)
               }
               console.log("es query ===> ", matchedString[0])
               const response = await DslESAPI(JSON.parse(matchedString[0]));
@@ -99,30 +109,47 @@ router.post("/query", async (req, res) => {
                 }
                 console.log("Response===>>", normalizeResp)
                 myCache.set(key, normalizeResp, cacheTime)
-                res.json(normalizeResp);
-              }else{
-                res.statusCode = 403
-                res.json({ Message: "Invalid query" });
+                finalResponse = {
+                  status: 200,
+                  response: JSON.stringify(normalizeResp)
+                }
+
+              } else {
+                finalResponse = {
+                  status: 403,
+                  response: JSON.stringify({ Message: "Invalid query" })
+                }
               }
             } else {
-              res.statusCode = 403
-              res.json({ Message: "Invalid query" });
+              finalResponse = {
+                status: 403,
+                response: JSON.stringify({ Message: "Invalid query" })
+              }
             }
           } else {
-            res.statusCode = 403
-            res.json({ Message: "Invalid query" });
+            finalResponse = {
+              status: 403,
+              response: JSON.stringify({ Message: "Invalid query" })
+            }
           }
         })
         .catch((error) => {
-          res.statusCode = 403
-          res.json({ Message: error.message });
+          console.log("Catcha",error)
+          finalResponse = {
+            status: 403,
+            response: JSON.stringify({ Message: error.message })
+          }
         });
     } catch (ex) {
-      res.statusCode = 403
-      res.json({ Message: "Invalid query" });
+      console.log("Catcha",ex)
+      finalResponse = {
+        status: 403,
+        response:JSON.stringify({ Message: "Invalid query" })
+      }
     }
   }
-});
+  return finalResponse;
+}
 
 router.post("/esrecords", async (req, res) => {
   const response = await DslESAPI(req.body);
@@ -170,4 +197,4 @@ async function DslESAPI(esquery, res) {
   }
 }
 
-module.exports = router;
+//module.exports = router;
